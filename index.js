@@ -50,7 +50,53 @@ const logSchema = new mongoose.Schema({
 
 const Log = mongoose.model('Log', logSchema);
 
+//create user
+app.post('/api/users', async (req, res) => {
+  try {
+    const username = req.body.username;
 
+    const newUser = await User.create({ username });
+    res.json({ username: newUser.username, _id: newUser._id });
+
+  } catch (err) {
+    res.status(500).json({ error: "Error creating user" });
+  }
+});
+
+//fetch all users
+app.get('/api/users', async(req, res) => {
+  try{
+    const users = await User.find({}, 'username _id');
+    res.json(users);
+
+  }catch(error){
+    res.status(500).json({ error: 'Error fetching all users' });
+  }
+});
+
+//create exercise
+app.post('/api/users/:_id/exercises', async(req, res) => {
+  try{
+    const user =  await User.findById(req.params._id);
+    const exercise = await Exercise.create({
+      username: user.username,
+      description: req.body.description,
+      duration: parseInt(req.body.duration),
+      date: req.body.date ? new Date(req.body.date) : new Date(),
+      _id: user._id
+    });
+    res.json({
+      username: user.username,
+      description: exercise.description,
+      duration: exercise.duration,
+      date: exercise.date.toDateString(),
+      _id: user._id
+    });
+
+  }catch(errr){
+    res.status(500).json({ error: 'Error creating ex for user'}); 
+  }
+});
 
 const listener = app.listen(process.env.PORT || 3000, () => {
   console.log('Your app is listening on port ' + listener.address().port)
