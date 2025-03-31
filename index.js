@@ -88,7 +88,7 @@ app.post('/api/users/:_id/exercises', async (req, res) => {
 });
 
 // fetch exercise log
-app.get('/api/users/:_id/logs?[from][&to][&limit]', async (req, res) => {
+app.get('/api/users/:_id/logs', async (req, res) => {
   try {
     const user = await User.findById(req.params._id);
     const from = req.query.from;
@@ -97,10 +97,10 @@ app.get('/api/users/:_id/logs?[from][&to][&limit]', async (req, res) => {
     
     var query = {username: user.username};
 
-    if (req.query.from || req.query.to) {
+    if (from || to) {
       query.date = {};
-      if (req.query.from) query.date.$gte = new Date(req.query.from);
-      if (req.query.to) query.date.$lte = new Date(req.query.to);
+      if (from) query.date.$gte = new Date(from);
+      if (to) query.date.$lte = new Date(to);
     }
 
     if (!user) {
@@ -109,7 +109,7 @@ app.get('/api/users/:_id/logs?[from][&to][&limit]', async (req, res) => {
 
     const exercises = await Exercise.find(query)
     .select('description duration date')
-    .limit(limit);
+    .limit(limit ? parseInt(limit) : 0);
 
     res.json({
       username: user.username,
